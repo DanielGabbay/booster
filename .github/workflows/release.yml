@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump (leave empty to detect from commits)"
+        required: false
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'chore(release)') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUMP_INPUT: ${{ github.event.inputs.bump }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --tags --force
+
+          CURRENT="v$(node -p "require('./package.json').version")"
+
+          if git describe --exact-match HEAD >/dev/null 2>&1; then
+            echo "HEAD already tagged — nothing to release"
+            exit 0
+          fi
+
+          LAST=$(git describe --tags --abbrev=0 2>/dev/null || true)
+
+          if [ -z "$LAST" ]; then
+            echo "No tags yet — publishing $CURRENT as the first release"
+            git tag -a "$CURRENT" -m "$CURRENT"
+            git push origin "$CURRENT"
+            gh release create "$CURRENT" --generate-notes --title "$CURRENT"
+            exit 0
+          fi
+
+          COMMITS=$(git log --format='%s' "$LAST"..HEAD)
+          BUMP="${BUMP_INPUT:-auto}"
+          if [ "$BUMP" = "auto" ] || [ -z "$BUMP" ]; then
+            if printf '%s\n' "$COMMITS" | grep -qE 'BREAKING CHANGE|^[a-z]+(\(.+\))?!:'; then
+              BUMP=major
+            elif printf '%s\n' "$COMMITS" | grep -qE '^feat(\(.+\))?:'; then
+              BUMP=minor
+            else
+              BUMP=patch
+            fi
+          fi
+
+          echo "Bumping $BUMP since $LAST"
+          printf '%s\n' "$COMMITS"
+          NEW=$(npm version "$BUMP" -m "chore(release): %s")
+          git push origin HEAD:master --follow-tags
+          gh release create "$NEW" --generate-notes --title "$NEW"
+          echo "Released $NEW"

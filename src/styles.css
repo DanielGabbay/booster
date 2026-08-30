@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Heebo", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Rubik", "Heebo", ui-sans-serif, system-ui, sans-serif;
+  --color-paper: #f3ebdc;
+  --color-cream: #fbf6ec;
+  --color-surface: #fff9ee;
+  --color-ink: #2a2118;
+  --color-muted: #7a6a58;
+  --color-subtle: #a09080;
+  --color-accent: #c45c3e;
+  --color-accent-fg: #fff8f2;
+  --color-sage: #4f6b54;
+  --color-sage-fg: #f4f7f3;
+  --color-border: color-mix(in oklab, var(--color-ink) 12%, transparent);
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-soft: 0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent),
+    0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 8px 20px color-mix(in oklab, var(--color-ink) 8%, transparent);
+  --ease-pop: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-paper);
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.coin-rim {
+  background: repeating-conic-gradient(#e8c547 0deg 8deg, #b8860b 8deg 16deg);
+  box-shadow:
+    inset 0 2px 4px oklab(100% 0 0 / 0.55),
+    inset 0 -4px 8px oklab(38% 0.02 0.07 / 0.4),
+    0 10px 18px oklab(38% 0.02 0.07 / 0.28);
+}
+
+.coin-face {
+  background: radial-gradient(circle at 32% 28%, #f7e7a2, #d4a017 52%, #8a6a12 100%);
+}
+
+.basket-hit {
+  animation: basket-bounce 0.28s var(--ease-pop);
+}
+
+@keyframes basket-bounce {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.07, 0.93);
+  }
+  70% {
+    transform: scale(0.97, 1.04);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.num-pop {
+  animation: num-pop 0.28s var(--ease-out);
+}
+
+@keyframes num-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.sticker-pop {
+  animation: sticker-pop 0.42s var(--ease-pop);
+}
+
+@keyframes sticker-pop {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.86) rotate(-6deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06) rotate(2deg);
+  }
+  to {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.enter-up {
+  animation: enter-up 0.4s var(--ease-out) both;
+}
+
+@keyframes enter-up {
+  0% {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.pile-coin {
+  animation: pile-in 0.38s var(--ease-out) both;
+}
+
+@keyframes pile-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basket-hit,
+  .num-pop,
+  .sticker-pop,
+  .enter-up,
+  .pile-coin {
+    animation: none;
+  }
+}
